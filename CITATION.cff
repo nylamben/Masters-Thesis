@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "Please cite this research software and the original XJTU-SY dataset publication when using this work."
+title: "Explainable AI for Sustainable Predictive Maintenance and Fault Detection in Rolling Bearing"
+type: software
+authors:
+  - family-names: Benkerrache
+    given-names: Nylam
+repository-code: "https://github.com/nylamben/Masters-Thesis"
+date-released: 2026-11-23
+abstract: "Reproducible XJTU-SY endpoint-prognosis experiments with bearing/condition separation, Tree SHAP explanations and assumed maintenance scenarios."

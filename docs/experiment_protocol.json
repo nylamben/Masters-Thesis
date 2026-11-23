@@ -1,0 +1,118 @@
+{
+  "protocol_version": "1.1",
+  "registered_before_model_training": true,
+  "primary_benchmark": "XJTU-SY, all 15 bearing runs under three operating conditions",
+  "source": "https://biaowang.tech/xjtu-sy-bearing-datasets/",
+  "retrieval": "Public mirror pinned to revision 2742263; raw archive SHA256 and per-snapshot provenance retained",
+  "primary_target": "Minutes to the final recorded snapshot; no claim that this is an independently adjudicated catastrophic-failure timestamp",
+  "target_transform": "log1p during training; expm1 and nonnegative clipping for predictions",
+  "main_split": {
+    "train_run_numbers": [
+      1,
+      2,
+      3
+    ],
+    "validation_run_numbers": [
+      4
+    ],
+    "test_run_numbers": [
+      5
+    ],
+    "across_conditions": [
+      1,
+      2,
+      3
+    ]
+  },
+  "main_final_fit": "Runs 1â€“4 of each condition after selecting hyperparameters exclusively on run 4; evaluate once on run 5",
+  "transfer_protocol": "Three leave-one-operating-condition-out evaluations. Within each outer fold, use only source-condition runs 1â€“3 for fitting and source-condition run 4 for selection; refit using all five runs of source conditions, then test all five target-condition runs. No target-condition labels used for fitting or selection.",
+  "primary_selection_metric": "Unweighted mean of per-bearing MAE in minutes on validation bearings",
+  "training_weights": "Each training bearing has equal total sample weight",
+  "feature_variants": [
+    "basic",
+    "engineered",
+    "engineered_baseline_normalised"
+  ],
+  "basic": "Per-channel mean, standard deviation and RMS; elapsed observed minutes, rpm and radial load",
+  "engineered": "Basic plus impulsiveness, distribution, spectral, envelope and rotation-order band descriptors",
+  "normalisation": "Per-bearing healthy-baseline assumption: use the first ten snapshots only to form median and median absolute deviation scales. Predict/evaluate only snapshots after these ten. Target labels and future snapshots are never used in this transformation.",
+  "prohibited_predictors": [
+    "bearing_id",
+    "total_lifetime",
+    "RUL",
+    "future signal values",
+    "whole-test-trajectory extrema"
+  ],
+  "candidate_models": {
+    "ridge_alphas": [
+      1.0,
+      10.0
+    ],
+    "random_forest": [
+      {
+        "max_depth": 8,
+        "min_samples_leaf": 3
+      },
+      {
+        "max_depth": null,
+        "min_samples_leaf": 5
+      }
+    ],
+    "xgboost": [
+      {
+        "max_depth": 2,
+        "learning_rate": 0.05
+      },
+      {
+        "max_depth": 4,
+        "learning_rate": 0.03
+      }
+    ]
+  },
+  "fit_budget": {
+    "random_forest_trees": 200,
+    "xgboost_rounds": 300,
+    "seed": 42,
+    "n_jobs": 4
+  },
+  "baselines": [
+    "Training-only constant predictor",
+    "Condition-specific training median lifetime minus observed elapsed time"
+  ],
+  "metrics": [
+    "Per-bearing MAE and RMSE in minutes",
+    "Macro mean over bearings",
+    "R-squared with explicit population",
+    "Near-endpoint screening recall/precision at 30 minutes, explicitly a proxy rather than fault ground truth"
+  ],
+  "explanation": "Exact XGBoost Tree SHAP native pred_contribs, tree-path-dependent training leaf background; explain the validation-selected engineered XGBoost candidate separately if another family wins. Report log1p-minute output, additivity error, global and condition-wise rankings; no causal claims.",
+  "uncertainty": "Descriptive 90th-percentile absolute residual band estimated from the pre-refit validation model; refitting, temporal dependence and few bearings preclude nominal coverage guarantees. Report actual held-out coverage.",
+  "maintenance_scenarios": {
+    "lead_time_minutes": 5,
+    "alarm_predicted_RUL_minutes": 30,
+    "unplanned_cost_ratios": [
+      2,
+      5,
+      10
+    ],
+    "discarded_life_weights": [
+      0,
+      0.5,
+      1
+    ],
+    "interpretation": "Explicitly assumed unit-cost and discarded-life scenarios, not measured monetary or environmental results; no CO2 or lifecycle savings claims"
+  },
+  "persistence": "Atomic model/metrics writes, per-task completion manifest, data/config hashes, resumable RF tree batches and XGBoost iteration checkpoints; immutable connector snapshots and Colab Drive mirroring",
+  "LLM": "Not required or used",
+  "limitations": [
+    "Accelerated-life benchmark",
+    "Only 15 independent bearings",
+    "Three main test bearings",
+    "Operating condition changes rpm and load together",
+    "First-ten-snapshot healthy assumption",
+    "No independently supplied onset/fault labels",
+    "Scenario-based sustainability assessment only"
+  ],
+  "engineering_geometry": "Geometry-independent shaft-order bands, envelope statistics and broadband descriptors; no assumed defect-frequency geometry.",
+  "change_record": "Implementation clarification before any training; prediction target, splits, candidate budgets and selection metric unchanged."
+}
